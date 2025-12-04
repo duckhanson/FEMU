@@ -1305,6 +1305,74 @@ static void zns_init_params(FemuCtrl *n)
     id_zns->timing.blk_er_lat[TLC] = TLC_BLOCK_ERASE_LATENCY_NS;
     id_zns->timing.blk_er_lat[QLC] = QLC_BLOCK_ERASE_LATENCY_NS;
 
+    /* --- 修改開始 --- */
+    femu_log("===========================================\n");
+    femu_log("|        ZNS HW Configuration Check       |\n");      
+    femu_log("===========================================\n");
+    
+    // 1. 驗證幾何結構 (Geometry)
+    femu_log("[Geometry]\n");
+    femu_log("  #Channels       : %lu\n", id_zns->num_ch);
+    femu_log("  #Chips/Channel  : %lu\n", id_zns->num_lun);
+    femu_log("  #Planes/Chip    : %lu\n", id_zns->num_plane);
+    femu_log("  #Blocks/Plane   : %lu\n", id_zns->num_blk);
+    femu_log("  #Pages/Block    : %lu (Derived from Total Size)\n", id_zns->num_page);
+    
+    // 2. 關鍵驗證：Page Size 是否真的變成了 4KB？
+    femu_log("  Phy Page Size   : %lu Bytes (Should be 4096)\n", ZNS_PAGE_SIZE);
+    femu_log("  Log Page Size   : %lu Bytes\n", LOGICAL_PAGE_SIZE);
+
+    // 3. 驗證內部計算單元
+    femu_log("[Internal Units]\n");
+    femu_log("  Program Unit    : %lu KiB\n", id_zns->program_unit / 1024);
+    femu_log("  Stripe Unit     : %lu KiB\n", id_zns->stripe_unit / 1024);
+    femu_log("  Write Cache Size: %u entries (%lu KiB)\n", 
+             id_zns->cache.num_wc, 
+             (id_zns->stripe_unit / LOGICAL_PAGE_SIZE) * 4); // assume 4KB logic
+
+    femu_log("===========================================\n"); 
+
+    // 4. 驗證延遲 (Latency) - 加入 Transfer Latency
+    femu_log("ZNS Timing Parameters (in microseconds):\n");
+    
+    // (A) Flash Latency
+    femu_log("  [Page Read]    SLC=%lu, TLC=%lu, QLC=%lu\n",
+             id_zns->timing.pg_rd_lat[SLC] / 1000,
+             id_zns->timing.pg_rd_lat[TLC] / 1000,
+             id_zns->timing.pg_rd_lat[QLC] / 1000);
+             
+    femu_log("  [Page Write]   SLC=%lu, TLC=%lu, QLC=%lu\n",
+             id_zns->timing.pg_wr_lat[SLC] / 1000,
+             id_zns->timing.pg_wr_lat[TLC] / 1000,
+             id_zns->timing.pg_wr_lat[QLC] / 1000);
+             
+    femu_log("  [Block Erase]  SLC=%lu, TLC=%lu, QLC=%lu\n",
+             id_zns->timing.blk_er_lat[SLC] / 1000,
+             id_zns->timing.blk_er_lat[TLC] / 1000,
+             id_zns->timing.blk_er_lat[QLC] / 1000);
+
+    // (B) 關鍵驗證：Transfer Latency (這是你剛剛在 nand.h 改的)
+    // 注意：這裡直接讀取 Macro，因為 struct 裡面沒有存這個值
+    femu_log("  [Transfer]     SLC=%d (Should be 60)\n", 
+             SLC_CHNL_PAGE_TRANSFER_LATENCY_NS / 1000);
+    //  Log the flash type in use
+    const char *flash_type_str;
+    switch (id_zns->flash_type) {
+        case SLC:
+            flash_type_str = "SLC";
+            break;
+        case TLC:
+            flash_type_str = "TLC";
+            break;
+        case QLC:
+            flash_type_str = "QLC";
+            break;
+        default:
+            flash_type_str = "Unknown";
+            break;
+    }
+    femu_log("ZNS Flash Type: %s\n", flash_type_str);
+
     id_zns->dataplane_started_ptr = &n->dataplane_started;
 
     n->zns = id_zns;

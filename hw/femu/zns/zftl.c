@@ -112,7 +112,8 @@ static uint64_t zns_advance_status(struct zns_ssd *zns, struct ppa *ppa,struct n
         /* To silent warnings */
         ;
     }
-
+    printf("[DEBUG] LBA %lu Write Latency: %lu ns (Type: %d)\n", 
+           ppa->ppa, lat, nand_type);
     return lat;
 }
 
@@ -123,7 +124,8 @@ static inline bool valid_ppa(struct zns_ssd *zns, struct ppa *ppa)
     int pl = ppa->g.pl;
     int blk = ppa->g.blk;
     int pg = ppa->g.pg;
-    int sub_pg = ppa->g.spg;
+    int sub_pg = 0;
+    // int sub_pg = ppa->g.spg;
 
     if (ch >= 0 && ch < zns->num_ch && lun >= 0 && lun < zns->num_lun && pl >=
         0 && pl < zns->num_plane && blk >= 0 && blk < zns->num_blk && pg>=0 && pg < zns->num_page && sub_pg >= 0 && sub_pg < ZNS_PAGE_SIZE/LOGICAL_PAGE_SIZE)
@@ -148,7 +150,8 @@ static struct ppa get_new_page(struct zns_ssd *zns)
     ppa.g.V = 1; //not padding page
     if(!valid_ppa(zns,&ppa))
     {
-        ftl_err("[Misao] invalid ppa: ch %u lun %u pl %u blk %u pg %u subpg  %u \n",ppa.g.ch,ppa.g.fc,ppa.g.pl,ppa.g.blk,ppa.g.pg,ppa.g.spg);
+        // ftl_err("[Misao] invalid ppa: ch %u lun %u pl %u blk %u pg %u subpg  %u \n",ppa.g.ch,ppa.g.fc,ppa.g.pl,ppa.g.blk,ppa.g.pg,ppa.g.spg);
+        ftl_err("[Misao] invalid ppa: ch %u lun %u pl %u blk %u pg %u \n",ppa.g.ch,ppa.g.fc,ppa.g.pl,ppa.g.blk,ppa.g.pg);
         ppa.ppa = UNMAPPED_PPA;
     }
     return ppa;
@@ -223,7 +226,7 @@ static void zns_reset_block_state(struct zns_ssd *zns, uint32_t zone_idx)
                 ppa.g.pl = pl;
                 ppa.g.blk = zone_idx;
                 ppa.g.pg = 0;
-                ppa.g.spg = 0;
+                // ppa.g.spg = 0;
 
                 blk = get_blk(zns, &ppa);
                 blk->page_wp = 0;
@@ -268,7 +271,7 @@ uint64_t zns_zone_reset(struct zns_ssd *zns, uint32_t zone_idx,
                 ppa.g.pl = pl;
                 ppa.g.blk = zone_idx;
                 ppa.g.pg = 0;
-                ppa.g.spg = 0;
+                // ppa.g.spg = 0;
 
                 sublat = zns_advance_status(zns, &ppa, &erase_cmd);
                 maxlat = (sublat > maxlat) ? sublat : maxlat;
@@ -349,7 +352,7 @@ static uint64_t zns_wc_flush(struct zns_ssd* zns, int wcidx, int type,uint64_t s
                     if (mapped_ppa(&oldppa)) {
                         /* FIXME: Misao: update old page information*/
                     }
-                    ppa.g.spg = subpage;
+                    // ppa.g.spg = subpage;
                     /* update maptbl */
                     set_maptbl_ent(zns, lpn, &ppa);
                     // ftl_debug("[F] lpn:\t%lu\t-->ch:\t%u\tlun:\t%u\tpl:\t%u\tblk:\t%u\tpg:\t%u\tsubpg:\t%u\tlat\t%lu\n",lpn,ppa.g.ch,ppa.g.fc,ppa.g.pl,ppa.g.blk,ppa.g.pg,ppa.g.spg,sublat);

@@ -1,7 +1,7 @@
 #ifndef __FEMU_ZNS_H
 #define __FEMU_ZNS_H
 
-#define SPG_BITS    (2)
+// #define SPG_BITS    (2)
 #define PG_BITS     (16)
 #define BLK_BITS    (32)
 #define PL_BITS     (1)
@@ -12,7 +12,9 @@
 #include "zftl.h"
 
 #define LOGICAL_PAGE_SIZE (4*KiB)
-#define ZNS_PAGE_SIZE (16*KiB)
+// [ASPLOS ’24] Eliminating Storage Management Overhead of Deduplication over SSD Arrays Through a Hardware/Software Co-Design. 
+// #define ZNS_PAGE_SIZE (16*KiB)
+#define ZNS_PAGE_SIZE (8*KiB)
 #define ZNS_DEFAULT_NUM_WRITE_CACHE (3)
 #define ZNS_DEFAULT_L2P_CACHE_SIZE (1*MiB)
 
@@ -30,11 +32,14 @@
  * tlc: one-step program, plat_us = 1e6×PageSize×3÷(ProgramThroughput/# of planes) [ISSCC 2024] A 1Tb Density 3b/Cell 3D-NAND Flash on a 2YY-Tier Technology with a 300MB/s Write Throughput
  * qlc: two-step program, plat_us = 2×1e6×PageSize×4÷(ProgramThroughput/# of planes) [ISSCC 2024] A 280-Layer 1Tb 4b/cell 3D-NAND Flash Memory with a 28.5Gb/mm2 Areal Density and a 3.2GB/s High-Speed IO Rate
  */
-#define SLC_PROGRAM_LATENCY_NS (75000)
+// [ASPLOS ’24] Eliminating Storage Management Overhead of Deduplication over SSD Arrays Through a Hardware/Software Co-Design. 
+// #define SLC_PROGRAM_LATENCY_NS (75000)
+#define SLC_PROGRAM_LATENCY_NS (140000) // 140us
 #define TLC_PROGRAM_LATENCY_NS (937500)
 #define QLC_PROGRAM_LATENCY_NS (12196000)
-
-#define SLC_READ_LATENCY_NS (4000)
+// [ASPLOS ’24] Eliminating Storage Management Overhead of Deduplication over SSD Arrays Through a Hardware/Software Co-Design. 
+// #define SLC_READ_LATENCY_NS (4000)
+#define SLC_READ_LATENCY_NS (40000) // 40us
 #define TLC_READ_LATENCY_NS (32000)
 #define QLC_READ_LATENCY_NS (85000)
 
@@ -67,7 +72,7 @@ typedef struct NvmeIdCtrlZoned {
 struct ppa {
     union {
         struct {
-        uint64_t spg  : SPG_BITS;
+        // uint64_t spg  : SPG_BITS;
         uint64_t pg   : PG_BITS;
 	    uint64_t blk  : BLK_BITS;
 	    uint64_t fc   : FC_BITS;

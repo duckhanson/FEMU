@@ -6,10 +6,16 @@
 /*
  * SLC NAND latency numbers in naoseconds
  */
-#define SLC_PAGE_READ_LATENCY_NS          (40000)
-#define SLC_PAGE_WRITE_LATENCY_NS         (800000)
-#define SLC_BLOCK_ERASE_LATENCY_NS        (2000000)
-#define SLC_CHNL_PAGE_TRANSFER_LATENCY_NS (20000)
+// #define SLC_PAGE_READ_LATENCY_NS          (40000)
+// #define SLC_PAGE_WRITE_LATENCY_NS         (800000)
+// #define SLC_BLOCK_ERASE_LATENCY_NS        (2000000)
+// #define SLC_CHNL_PAGE_TRANSFER_LATENCY_NS (20000)
+
+// [ASPLOS ’24] Eliminating Storage Management Overhead of Deduplication over SSD Arrays Through a Hardware/Software Co-Design. 
+#define SLC_PAGE_READ_LATENCY_NS          (40000) // 40us
+#define SLC_PAGE_WRITE_LATENCY_NS         (140000) // 140us
+#define SLC_BLOCK_ERASE_LATENCY_NS        (3000000) // 3ms
+#define SLC_CHNL_PAGE_TRANSFER_LATENCY_NS (60000) // 60us
 
 /*
  * MLC NAND latency numbers in nanoseconds
